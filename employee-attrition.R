@@ -67,4 +67,65 @@ employee_data <- as.tibble(data)
 summary(employee_data)
 str(employee_data)
 
+employee_data <- rename(employee_data, Age = ï..Age)
+
+#=============================================================================================================================================================================================================================
+# ANALYSIS & INITIAL BRAINSTORM
+#=============================================================================================================================================================================================================================
+
+# Potential research and analysis opportunities: (**) = green light analysis & (xx) = red light (cannot do it)
+# Use a heat map to see the highest correlation between certain variables.We can group the variables together with positive and negative correlation.
+# Analyze the variables together and try to utilize facet wrapping
+
+#=============================================================================================================================================================================================================================
+# 1. PEARSON'S CORRELATION - HEAT MAP
+#=============================================================================================================================================================================================================================
+
+corr_data <- employee_data %>%
+  mutate(attrition = ifelse(Attrition == "No", 0, 1),
+         gender = ifelse(Gender == "Female", 0, 1),
+         overtime = ifelse(OverTime == "No", 0, 1)) %>%
+  select(Age, attrition, DistanceFromHome, EnvironmentSatisfaction, gender, HourlyRate, JobSatisfaction, PercentSalaryHike,  overtime, TotalWorkingYears, WorkLifeBalance, YearsAtCompany:YearsWithCurrManager)
+
+
+ggcorrplot(cor(corr_data), hc.order = TRUE, lab = TRUE, lab_size = 3) 
+# based on this correlation plot, we are more interested in how outcome fares with the other numeric variables.
+# Pregnancy, age, diabetes pedigree function, and insulin have a slightly positive correlation with outcome
+# Glucose and BMI have a strong positive correlation with Outcome.
+# Blood pressure and skin thickness does not appear to show either a positive or negative correlation with Outcome.
+# This will be our overhead analysis and we will now dive a bit deeper into each and see how it correlates and if it matches our linear regression model.
+
+cor(corr_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
