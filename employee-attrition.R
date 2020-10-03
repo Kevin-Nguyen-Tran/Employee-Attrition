@@ -100,7 +100,7 @@ corr_data <- employee_data %>%
   mutate(attrition = ifelse(Attrition == "No", 0, 1),
          gender = ifelse(Gender == "Female", 0, 1),
          overtime = ifelse(OverTime == "No", 0, 1)) %>%
-  select(Age, attrition, DistanceFromHome, EnvironmentSatisfaction, gender, HourlyRate, JobSatisfaction, PercentSalaryHike,  overtime, TotalWorkingYears, WorkLifeBalance, YearsAtCompany:YearsWithCurrManager)
+  select(Age, attrition, DistanceFromHome, NumCompaniesWorked, EnvironmentSatisfaction, gender, HourlyRate, JobSatisfaction, PercentSalaryHike,  overtime, TotalWorkingYears, WorkLifeBalance, YearsAtCompany:YearsWithCurrManager)
 
 
 ggcorrplot(cor(corr_data), hc.order = TRUE, lab = TRUE, lab_size = 2) 
@@ -152,21 +152,36 @@ years_att <- ggplot(employee_data, aes(x = Attrition, y = YearsSinceLastPromotio
 work_att <- ggplot(employee_data, aes(x = Attrition, y = WorkLifeBalance)) +
   geom_boxplot()
 
-multiplot(hr_att, dist_att, perc_att, years_att, work_att, cols = 2)
+numcomp_att <- ggplot(employee_data, aes(x = Attrition, y = NumCompaniesWorked)) +
+  geom_boxplot()
+
+multiplot(hr_att, dist_att, perc_att, years_att, work_att, numcomp_att, cols = 2)
 
 ggplot(employee_data, aes(x = Gender, fill = Attrition)) +
   geom_bar(position = "fill")
 
 # As we can see, the average of each variable are similar regardless of attrition status.
-t.test(corr_data$HourlyRate ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
-t.test(corr_data$DistanceFromHome ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
-t.test(corr_data$PercentSalaryHike ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
-t.test(corr_data$YearsSinceLastPromotion ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
-t.test(corr_data$WorkLifeBalance ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
-t.test(corr_data$gender ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+hourrate_t <- t.test(corr_data$HourlyRate ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+disthome_t <- t.test(corr_data$DistanceFromHome ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+percsalhike_t <- t.test(corr_data$PercentSalaryHike ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+yrslastpromo_t <- t.test(corr_data$YearsSinceLastPromotion ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+wrklifebal_t <- t.test(corr_data$WorkLifeBalance ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+gender_t <- t.test(corr_data$gender ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+numcompworked_t <- t.test(corr_data$NumCompaniesWorked ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
-# hourly rate, percent salary hike, years since last promotion, and gender all show no significant difference in those who did and did not leave their job.
-# Surprisingly, Distance from Home and Work Life Balance showed a statistically significant positive and negative difference between those who did and did not leave their jobs, respectively.
+tribble(
+  ~name, ~p.value,
+  "Hourly Rate", hourrate_t$p.value,
+  "Distance From Home", disthome_t$p.value,
+  "Percent Salary Hike", percsalhike_t$p.value,
+  "Years Since Last Promotion", yrslastpromo_t$p.value,
+  "Work Life Balance", wrklifebal_t$p.value,
+  "Gender", gender_t$p.value,
+  "Number of Companies Worked", numcompworked_t$p.value
+)
+
+# hourly rate, percent salary hike, years since last promotion, Number of Companies Worked, and gender all show no significant difference in those who did and did not leave their job.
+# Surprisingly, Distance from Home and Work Life Balance showed a statistically significant (Less than 5%) positive and negative difference between those who did and did not leave their jobs, respectively.
 # according to the heat map, the distance from home had a 0.08 correlation and Work Life Balance had a -0.06 correlation.
 # Therefore, we can reduce our window to +- 0.05 for the neutral window from +-0.1. This will accurately group our variables.
 
@@ -242,10 +257,42 @@ summary(predicted)
 # each variable is analyzed and categorized (with small p-values), as either a good or bad predictor of attrition
 # based on the summary, Age, Distance from Home, Environment satisfaction, job satisfaction, overtime, total working years, work life balance, years in current role, years since last promotion and years with current manager are all good predictors.
 # keep in mind, these good predictors are determined by their relationship to one another towards attrition
+# It is interesting to see that Numbers of Companies Worked and Years Since Last Promotion is statistically significant and a good predictor of attrition when it showed no average difference (noted by the t.test and heat map)
+# It is also surprising to see that years at company is also not statistically significant and a good predictor of attrition despite the t.test and heat map stating there was a significant difference.
 
+#=============================================================================================================================================================================================================================
+# 7. CATEGORICAL VARIABLE ANALYSIS
+#=============================================================================================================================================================================================================================
+# Business Travel, Department, Education Field, Job Role, Marital Status
 
+unique(employee_data$BusinessTravel) #Travel Rarely, Travel Freq, Non-Travel
+unique(employee_data$Department) # Sales, Research & Development, HR
+unique(employee_data$EducationField) # Life Sciences, Other, Medical, Marketing, Tech degree, HR
+unique(employee_data$JobRole) # Sales Exec, Research Scientist, Lab tech, manufacturing director, HC rep, Manager, Sales rep, research director, HR
+unique(employee_data$MaritalStatus) # Single, Married, Divorced
 
+businesstravel_plot <- ggplot(employee_data, aes(x = BusinessTravel, fill = Attrition)) +
+  geom_bar(position = "fill")
+# Those who travel more frequently have a higher attrition rate. So the more you travel, the more likely you are to leave your job within this data set.
 
+department_plot <- ggplot(employee_data, aes(x = Department, fill = Attrition)) +
+  geom_bar(position = "fill")
+# Those who work in sales and hr have a higher attrition rate vs those in the research and development department.
+
+educationfield_plot <- ggplot(employee_data, aes(x = EducationField, fill = Attrition)) +
+  geom_bar(position = "fill")
+# those with degrees or an educational background of HR, Marketing, and tech have higher attrition rate.
+# those with degrees or an educational background of life sciences, medical, and other have similar and lower attrition rates.
+
+jobrole_plot <- ggplot(employee_data, aes(x = JobRole, fill = Attrition)) +
+  geom_bar(position = "fill")
+# Sales reps have the highest attrition rate of all job roles in this data set, it is then those who work in HR and as a lab tech.
+# Sales executives and research scientists have lower attrition than the above but still have high attrition rates.
+# manufacturing directors, managers, hc reps, and research directors all have low attrition rates.
+
+maritalstatus_plot <- ggplot(employee_data, aes(x = MaritalStatus, fill = Attrition)) +
+  geom_bar(position = "fill")
+# Those that are single have the highest attrition rates, those that are married and divorced have lower attrition rates.
 
 
 
