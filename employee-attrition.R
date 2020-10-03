@@ -177,6 +177,76 @@ t.test(corr_data$gender ~ corr_data$attrition, mu = 0, alt = "two.sided", conf =
 # We will explore the negative correlation, which shows that as this variable increases, the likelihood of attrition will decrease!
 # these are the variables that retain employees as it progresses!
 
+ggplot(employee_data, aes(x = YearsInCurrentRole, y = YearsWithCurrManager)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_wrap(~ Attrition, nrow = 2) # might use, not sure yet
+
+job_att <- ggplot(employee_data, aes(x = Attrition, y = JobSatisfaction)) +
+  geom_boxplot()
+
+age_att <- ggplot(employee_data, aes(x = Attrition, y = Age)) +
+  geom_boxplot()
+
+worky_att <- ggplot(employee_data, aes(x = Attrition, y = TotalWorkingYears)) +
+  geom_boxplot()
+
+yearscurr_att <- ggplot(employee_data, aes(x = Attrition, y = YearsInCurrentRole)) +
+  geom_boxplot()
+
+yearscomp_att <- ggplot(employee_data, aes(x = Attrition, y = YearsAtCompany)) +
+  geom_boxplot()
+
+yearsmgr_att <- ggplot(employee_data, aes(x = Attrition, y = YearsWithCurrManager)) +
+  geom_boxplot()
+
+env_att <- ggplot(employee_data, aes(x = Attrition, y = EnvironmentSatisfaction)) +
+  geom_boxplot()
+
+multiplot(job_att, age_att, worky_att, yearscurr_att, yearscomp_att, yearsmgr_att, env_att, cols = 2)
+
+jobsat_t <- t.test(corr_data$JobSatisfaction ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+age_t <- t.test(corr_data$Age ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+workyrs_t <- t.test(corr_data$TotalWorkingYears ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+yrsrole_t <- t.test(corr_data$YearsInCurrentRole ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+yrscomp_t <- t.test(corr_data$YearsAtCompany ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+yrsmgr_t <- t.test(corr_data$YearsWithCurrManager ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+envsat_t <- t.test(corr_data$EnvironmentSatisfaction ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+
+# All t.tests above show a significant difference between the average of each variable in respect to attrition. 
+# Therefore we can say with 95% confidence that each variable has a signicantly negative correlation with attrition.
+# To retain employees, they are more satisfied with their job, have had more tenure in working experience, at the company, with current manager, and is satisfied with their environment.
+# If we were to choose areas of focus, we would look at the p-values and see which one had the smallest and make those areas of focus, since the probability of retention would be greater
+
+tribble(
+  ~name, ~p.value,
+  "Job Satisfaction", jobsat_t$p.value,
+  "Age", age_t$p.value,
+  "Total Working Years", workyrs_t$p.value,
+  "Years In Current Role", yrsrole_t$p.value,
+  "Years at Company", yrscomp_t$p.value,
+  "Years with Current Mgr", yrsmgr_t$p.value,
+  "Environment Satisfaction", envsat_t$p.value
+)
+# As shown in the table above, the p-value is smallest for Years In Current Role, Total Working Years, and years with current Manager.
+# All are statistically significant, however, if we were to focus on a few variables and how we can retain employees, we need to ensure that we acquire tenured professionals, both in work experience and experience in their role, as well as maintain a good employee to manager relationship.
+
+#=============================================================================================================================================================================================================================
+# 6. LOGISTIC LINEAR REGRESSION - BINOMIAL
+#=============================================================================================================================================================================================================================
+
+predicted <- glm(attrition ~ ., family = "binomial", data = corr_data)
+summary(predicted)
+
+# According to this logistic linear regression model, it predicts the probability of attrition based on the given variables
+# each variable is analyzed and categorized (with small p-values), as either a good or bad predictor of attrition
+# based on the summary, Age, Distance from Home, Environment satisfaction, job satisfaction, overtime, total working years, work life balance, years in current role, years since last promotion and years with current manager are all good predictors.
+# keep in mind, these good predictors are determined by their relationship to one another towards attrition
+
+
+
+
+
 
 
 
