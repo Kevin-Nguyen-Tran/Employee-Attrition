@@ -100,7 +100,7 @@ corr_data <- employee_data %>%
   mutate(attrition = ifelse(Attrition == "No", 0, 1),
          gender = ifelse(Gender == "Female", 0, 1),
          overtime = ifelse(OverTime == "No", 0, 1)) %>%
-  select(Age, attrition, DistanceFromHome, NumCompaniesWorked, EnvironmentSatisfaction, gender, HourlyRate, JobSatisfaction, PercentSalaryHike,  overtime, TotalWorkingYears, WorkLifeBalance, YearsAtCompany:YearsWithCurrManager)
+  select(Age, attrition, DistanceFromHome, Education, NumCompaniesWorked, EnvironmentSatisfaction, gender, HourlyRate, JobSatisfaction, PercentSalaryHike,  overtime, TotalWorkingYears, WorkLifeBalance, YearsAtCompany:YearsWithCurrManager)
 
 
 ggcorrplot(cor(corr_data), hc.order = TRUE, lab = TRUE, lab_size = 2) 
@@ -155,7 +155,10 @@ work_att <- ggplot(employee_data, aes(x = Attrition, y = WorkLifeBalance)) +
 numcomp_att <- ggplot(employee_data, aes(x = Attrition, y = NumCompaniesWorked)) +
   geom_boxplot()
 
-multiplot(hr_att, dist_att, perc_att, years_att, work_att, numcomp_att, cols = 2)
+edu_att <- ggplot(employee_data, aes(x = Attrition, y = Education)) +
+  geom_boxplot()
+
+multiplot(hr_att, dist_att, perc_att, years_att, work_att, numcomp_att, edu_att, cols = 2)
 
 ggplot(employee_data, aes(x = Gender, fill = Attrition)) +
   geom_bar(position = "fill")
@@ -168,6 +171,7 @@ yrslastpromo_t <- t.test(corr_data$YearsSinceLastPromotion ~ corr_data$attrition
 wrklifebal_t <- t.test(corr_data$WorkLifeBalance ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 gender_t <- t.test(corr_data$gender ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 numcompworked_t <- t.test(corr_data$NumCompaniesWorked ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+edu_t <-  t.test(corr_data$Education ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
 tribble(
   ~name, ~p.value,
@@ -177,10 +181,11 @@ tribble(
   "Years Since Last Promotion", yrslastpromo_t$p.value,
   "Work Life Balance", wrklifebal_t$p.value,
   "Gender", gender_t$p.value,
-  "Number of Companies Worked", numcompworked_t$p.value
+  "Number of Companies Worked", numcompworked_t$p.value,
+  "Education", edu_t$p.value
 )
 
-# hourly rate, percent salary hike, years since last promotion, Number of Companies Worked, and gender all show no significant difference in those who did and did not leave their job.
+# hourly rate, percent salary hike, years since last promotion, Number of Companies Worked, education and gender all show no significant difference in those who did and did not leave their job.
 # Surprisingly, Distance from Home and Work Life Balance showed a statistically significant (Less than 5%) positive and negative difference between those who did and did not leave their jobs, respectively.
 # according to the heat map, the distance from home had a 0.08 correlation and Work Life Balance had a -0.06 correlation.
 # Therefore, we can reduce our window to +- 0.05 for the neutral window from +-0.1. This will accurately group our variables.
@@ -191,11 +196,6 @@ tribble(
 # Negative corr: job satisfaction, age, total working years, years in current role, years at company, years with current manager, and environment sat
 # We will explore the negative correlation, which shows that as this variable increases, the likelihood of attrition will decrease!
 # these are the variables that retain employees as it progresses!
-
-ggplot(employee_data, aes(x = YearsInCurrentRole, y = YearsWithCurrManager)) +
-  geom_point() +
-  geom_smooth(se = FALSE) +
-  facet_wrap(~ Attrition, nrow = 2) # might use, not sure yet
 
 job_att <- ggplot(employee_data, aes(x = Attrition, y = JobSatisfaction)) +
   geom_boxplot()
@@ -218,7 +218,8 @@ yearsmgr_att <- ggplot(employee_data, aes(x = Attrition, y = YearsWithCurrManage
 env_att <- ggplot(employee_data, aes(x = Attrition, y = EnvironmentSatisfaction)) +
   geom_boxplot()
 
-multiplot(job_att, age_att, worky_att, yearscurr_att, yearscomp_att, yearsmgr_att, env_att, cols = 2)
+
+multiplot(job_att, age_att, worky_att, yearscurr_att, yearscomp_att, yearsmgr_att, env_att, cols = 3)
 
 jobsat_t <- t.test(corr_data$JobSatisfaction ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 age_t <- t.test(corr_data$Age ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
@@ -257,7 +258,7 @@ summary(predicted)
 # each variable is analyzed and categorized (with small p-values), as either a good or bad predictor of attrition
 # based on the summary, Age, Distance from Home, Environment satisfaction, job satisfaction, overtime, total working years, work life balance, years in current role, years since last promotion and years with current manager are all good predictors.
 # keep in mind, these good predictors are determined by their relationship to one another towards attrition
-# It is interesting to see that Numbers of Companies Worked and Years Since Last Promotion is statistically significant and a good predictor of attrition when it showed no average difference (noted by the t.test and heat map)
+# It is interesting to see that Numbers of Companies Worked and Years Since Last Promotion is statistically significant and a good predictor of attrition when it showed no average difference (noted by the t.test and heat map) in earlier sections
 # It is also surprising to see that years at company is also not statistically significant and a good predictor of attrition despite the t.test and heat map stating there was a significant difference.
 
 #=============================================================================================================================================================================================================================
@@ -294,11 +295,78 @@ maritalstatus_plot <- ggplot(employee_data, aes(x = MaritalStatus, fill = Attrit
   geom_bar(position = "fill")
 # Those that are single have the highest attrition rates, those that are married and divorced have lower attrition rates.
 
+#=============================================================================================================================================================================================================================
+# 7. FACET WRAPPING - GOOD PREDICTORS - NUMERIC VS CATEGORICAL VARIABLES (ALWAYS INCLUDE ATTRITION)
+#=============================================================================================================================================================================================================================
+# Good predictors:
+# Age, Distance from Home, num of companies worked, total working years, years in current role, years since last promotion and years with current manager area ll good num predictors
+# Environment satisfaction, job satisfaction, overtime, work life balance are all good categorical predictors
 
+facet_data <- employee_data %>%
+  mutate(education = mapvalues(employee_data$Education,
+            from = c(1, 2, 3, 4, 5),
+            to = c("Below College", "College", "Bachelor", "Master", "Doctor")),
+          jobsatisfaction = mapvalues(employee_data$JobSatisfaction,
+                                      from = c(1, 2, 3, 4),
+                                      to = c("Low", "Medium", "High", "Very High")),
+         environmentsatisfaction = mapvalues(employee_data$EnvironmentSatisfaction,
+                                             from = c(1, 2, 3, 4),
+                                             to = c("Low", "Medium", "High", "Very High")),
+         worklifebalance = mapvalues(employee_data$WorkLifeBalance,
+                                             from = c(1, 2, 3, 4),
+                                             to = c("Low", "Medium", "High", "Very High"))
+         )
 
+facet_data$jobsatisfaction_f <- factor(facet_data$jobsatisfaction, levels = c("Low", "Medium", "High", "Very High"))
+facet_data$education_f <- factor(facet_data$education, levels = c("Below College", "College", "Bachelor", "Master", "Doctor"))
+facet_data$environmentsatisfaction_f <- factor(facet_data$environmentsatisfaction, levels = c("Low", "Medium", "High", "Very High"))
+facet_data$worklifebalance_f <- factor(facet_data$worklifebalance, levels = c("Low", "Medium", "High", "Very High"))
+# This tidy's the data a bit more for when projected on a grid. Instead of going alphabetic, it will go by the levels specified above
 
+ggplot(facet_data, aes(x = YearsInCurrentRole, y = YearsWithCurrManager)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_grid(Attrition ~ jobsatisfaction_f) 
+# As seen in the above graph, years in current role and years with current manager has a positive linear relationship in relation to attrition and job satisfaction
+# Let's look at each section separately by attrition: those without attrition: low job satisfaction shows a positive and then negative correlation in years with current role and current manager.
+# this could imply internal management change.
+# Medium, High, and Very High job satisfaction shows a consistent positive relationship, with no noticeable decline
 
+# Those with attrition: Low, medium and high job satisfaction showed two declines in the relationship between years in current role and years with current manager.
+# the dips occur at different lengths of time, people with low satisfaction tend to have a decline sooner than those with medium and high job satisfaction.
+# as expected, those with very high job satisfaction but still left their job showed a positive correlation through out. This could imply that individuals might have suddenly left for a better opportunity towards the end of their tenure which explains no dips throughout their time
 
+ggplot(facet_data, aes(x = TotalWorkingYears, y = YearsSinceLastPromotion)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_grid(Attrition ~ education_f) 
+# As seen in the above graph, total working years and years since last promotion, there are varying relationships in relation to attrition and education
+# Let's look at each section separately by attrition: those without attrition: over the total years of work there is an increase in years since last promotion for those with education levels of below college and a Bachelor's.
+# We see that there is a dip in years since last promotion over total working years within education levels of college and master's. This means that these individuals had a promotion within their career.
+# it is surprising to see that college students will receive a promotion within their jobs at a sooner rate than those with Bachelor's. However, this can be explained by the type of work.
+# College students tend to have different types of positions (food service, sales associate, and etc) vs Bachelors (entry level) which might lead to easier promotions.
 
+# Those with attrition: individuals with below college and college education (less than bachelor's) showed attrition after promotions (as noted by the dip). This can be explained by the type of jobs obtained with that particular education level. Such as call center, sales, receptionists, admin support, and etc.
+# that regardless of promotion, these positions are expected to have higher turnover.
+# As expected, those with a Bachelor's and Master's Degree who were not promoted for a long time over the total years working have left their jobs.
+# some possible explanations can include feeling under appreciated for their tenure and effort, overlooking educational impact, and etc.
+# Those with doctorates, showed an attrition even after promotions, could be due to suddenly finding a better opportunity 
 
+ggplot(facet_data, aes(x = TotalWorkingYears, y = Age)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_grid(Attrition ~ jobsatisfaction_f) 
+# As seen in the above graph, total working years and age all show a positive relationship! The explanation of no attrition showing more of a linear relationship than yes attrition could be due to sample size. As it increases, the more linear it becomes.
+
+ggplot(facet_data, aes(x = TotalWorkingYears, y = Age)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_grid(Attrition ~ environmentsatisfaction_f) 
+# As seen in the above graph, total working years and age all show a positive relationship! The explanation of no attrition showing more of a linear relationship than yes attrition could be due to sample size. As it increases, the more linear it becomes.
+
+ggplot(facet_data, aes(x = TotalWorkingYears, y = Age)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_grid(Attrition ~ OverTime)
+# the last 3 facet grids do not add much value to the EDA ***MIGHT NOT INCLUDE!!!!**
 
