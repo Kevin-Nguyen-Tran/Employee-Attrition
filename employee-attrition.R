@@ -145,11 +145,23 @@ ggplot(employee_data, aes(x = OverTime, fill = Attrition)) +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5))
 
+ggplot(employee_data, aes(x = Attrition, y = DistanceFromHome)) +
+  geom_boxplot() +
+  theme_dark() +
+  labs(x = "Attrition", 
+       y = "Distance from Home",
+       title = "More Distance from Work to Home",
+       subtitle = "Has More Attrition",
+       caption = "Source: IBM HR Analytics") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+
 # This bar chart tells us, that there is more attrition in those that decide to work overtime vs those that do not. However, is this difference in attrition statistically significant?
 
 t.test(corr_data$overtime ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 # Null Hypothesis: states that there is no significant difference between the attrition of those who work and do not work overtime.
 # Do to our p-value being less than 5% and the confidence interval does not include zero, we can reject the null hypothesis with 95% confidence and assume that there is a statisitcally significant difference in attrition of those who do and do not work overtime.
+t.test(corr_data$DistanceFromHome ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
 #=============================================================================================================================================================================================================================
 # 4. NEUTRAL CORRELATION TO ATTRITION
@@ -181,12 +193,6 @@ years_att <- ggplot(employee_data, aes(x = Attrition, y = YearsSinceLastPromotio
   labs(y = "Yrs Since Promo"
   )
 
-work_att <- ggplot(employee_data, aes(x = Attrition, y = WorkLifeBalance)) +
-  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
-  theme_dark() +
-  labs(y = "Work Life Balance"
-  )
-
 numcomp_att <- ggplot(employee_data, aes(x = Attrition, y = NumCompaniesWorked)) +
   geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
   theme_dark() +
@@ -199,7 +205,7 @@ edu_att <- ggplot(employee_data, aes(x = Attrition, y = Education)) +
   labs(y = "Education"
   )
 
-multiplot(hr_att, dist_att, perc_att, years_att, work_att, numcomp_att, edu_att, cols = 2)
+multiplot(hr_att, dist_att, perc_att, years_att, numcomp_att, edu_att, cols = 2)
 
 ggplot(employee_data, aes(x = Gender, fill = Attrition)) +
   geom_bar(position = "fill")
@@ -209,7 +215,6 @@ hourrate_t <- t.test(corr_data$HourlyRate ~ corr_data$attrition, mu = 0, alt = "
 disthome_t <- t.test(corr_data$DistanceFromHome ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 percsalhike_t <- t.test(corr_data$PercentSalaryHike ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 yrslastpromo_t <- t.test(corr_data$YearsSinceLastPromotion ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
-wrklifebal_t <- t.test(corr_data$WorkLifeBalance ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 gender_t <- t.test(corr_data$gender ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 numcompworked_t <- t.test(corr_data$NumCompaniesWorked ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 edu_t <-  t.test(corr_data$Education ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
@@ -220,7 +225,6 @@ tribble(
   "Distance From Home", disthome_t$p.value,
   "Percent Salary Hike", percsalhike_t$p.value,
   "Years Since Last Promotion", yrslastpromo_t$p.value,
-  "Work Life Balance", wrklifebal_t$p.value,
   "Gender", gender_t$p.value,
   "Number of Companies Worked", numcompworked_t$p.value,
   "Education", edu_t$p.value
@@ -248,6 +252,12 @@ age_att <- ggplot(employee_data, aes(x = Attrition, y = Age)) +
   geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
   theme_dark() +
   labs(y = "Age"
+  )
+
+work_att <- ggplot(employee_data, aes(x = Attrition, y = WorkLifeBalance)) +
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(y = "Work Life Balance"
   )
 
 worky_att <- ggplot(employee_data, aes(x = Attrition, y = TotalWorkingYears)) +
@@ -281,16 +291,16 @@ env_att <- ggplot(employee_data, aes(x = Attrition, y = EnvironmentSatisfaction)
   )
 
 
-multiplot(job_att, age_att, worky_att, yearscurr_att, yearscomp_att, yearsmgr_att, env_att, cols = 3)
+multiplot(job_att, age_att, work_att, worky_att, yearscurr_att, yearscomp_att, yearsmgr_att, env_att, cols = 3)
 
 jobsat_t <- t.test(corr_data$JobSatisfaction ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 age_t <- t.test(corr_data$Age ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+wrklifebal_t <- t.test(corr_data$WorkLifeBalance ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 workyrs_t <- t.test(corr_data$TotalWorkingYears ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 yrsrole_t <- t.test(corr_data$YearsInCurrentRole ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 yrscomp_t <- t.test(corr_data$YearsAtCompany ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 yrsmgr_t <- t.test(corr_data$YearsWithCurrManager ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 envsat_t <- t.test(corr_data$EnvironmentSatisfaction ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
-
 # All t.tests above show a significant difference between the average of each variable in respect to attrition. 
 # Therefore we can say with 95% confidence that each variable has a signicantly negative correlation with attrition.
 # To retain employees, they are more satisfied with their job, have had more tenure in working experience, at the company, with current manager, and is satisfied with their environment.
@@ -300,6 +310,7 @@ tribble(
   ~name, ~p.value,
   "Job Satisfaction", jobsat_t$p.value,
   "Age", age_t$p.value,
+  "Work Life Balance", wrklifebal_t$p.value,
   "Total Working Years", workyrs_t$p.value,
   "Years In Current Role", yrsrole_t$p.value,
   "Years at Company", yrscomp_t$p.value,

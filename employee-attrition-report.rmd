@@ -308,7 +308,7 @@ env_att <- ggplot(employee_data, aes(x = Attrition, y = EnvironmentSatisfaction)
   )
 
 
-multiplot(job_att, age_att, worky_att, worky_att, yearscurr_att, yearscomp_att, yearsmgr_att, env_att, cols = 3)
+multiplot(job_att, age_att, work_att, worky_att, yearscurr_att, yearscomp_att, yearsmgr_att, env_att, cols = 3)
 
 jobsat_t <- t.test(corr_data$JobSatisfaction ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 age_t <- t.test(corr_data$Age ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
