@@ -83,7 +83,14 @@ employee_data <- rename(employee_data, Age = ï..Age)
 #=============================================================================================================================================================================================================================
 
 ggplot(employee_data, aes(x = Attrition)) +
-  geom_bar(position = "stack")
+  geom_bar(position = "stack", fill = wes_palette("GrandBudapest2", n = 2)) +
+  theme_dark() +
+  labs(x = "Attrition", 
+       y = "Count",
+       title = "Less Attrition in this Data Set",
+       caption = "Source: IBM HR Analytics") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 
 employee_data %>%
   group_by(Attrition) %>%
@@ -103,7 +110,12 @@ corr_data <- employee_data %>%
   select(Age, attrition, DistanceFromHome, Education, NumCompaniesWorked, EnvironmentSatisfaction, gender, HourlyRate, JobSatisfaction, PercentSalaryHike,  overtime, TotalWorkingYears, WorkLifeBalance, YearsAtCompany:YearsWithCurrManager)
 
 
-ggcorrplot(cor(corr_data), hc.order = TRUE, lab = TRUE, lab_size = 2) 
+ggcorrplot(cor(corr_data), hc.order = TRUE, lab = TRUE, lab_size = 2) +
+  labs(title = "Correlation Between Variables and Attrition",
+       subtitle = "Netural and Positive Correlation",
+       caption = "Source: IBM HR Analytics") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 # based on this correlation plot, we are more interested in how attrition fares with the other employee factors
 # Can separate by positive corr and negative correlation
 # Positive corr: overtime
@@ -123,7 +135,15 @@ cor(corr_data)
 # As more people work overtime, there is an increase in attrition.
 
 ggplot(employee_data, aes(x = OverTime, fill = Attrition)) +
-  geom_bar(position = "fill")
+  geom_bar(position = "fill") +
+  theme_dark() +
+  labs(x = "Over Time", 
+       y = "Proportion",
+       title = "Over Time Employees",
+       subtitle = "Have More Attrition",
+       caption = "Source: IBM HR Analytics") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 
 # This bar chart tells us, that there is more attrition in those that decide to work overtime vs those that do not. However, is this difference in attrition statistically significant?
 
@@ -138,25 +158,46 @@ t.test(corr_data$overtime ~ corr_data$attrition, mu = 0, alt = "two.sided", conf
 
 
 hr_att <- ggplot(employee_data, aes(x = Attrition, y = HourlyRate)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(y = "Hourly Rate"
+)
 
 dist_att <- ggplot(employee_data, aes(x = Attrition, y = DistanceFromHome)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(y = "Dist From Home"
+  )
 
 perc_att <- ggplot(employee_data, aes(x = Attrition, y = PercentSalaryHike)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(y = "% Salary Hike"
+  )
 
 years_att <- ggplot(employee_data, aes(x = Attrition, y = YearsSinceLastPromotion)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(y = "Yrs Since Promo"
+  )
 
 work_att <- ggplot(employee_data, aes(x = Attrition, y = WorkLifeBalance)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(y = "Work Life Balance"
+  )
 
 numcomp_att <- ggplot(employee_data, aes(x = Attrition, y = NumCompaniesWorked)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(y = "# Companies Worked"
+  )
 
 edu_att <- ggplot(employee_data, aes(x = Attrition, y = Education)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(y = "Education"
+  )
 
 multiplot(hr_att, dist_att, perc_att, years_att, work_att, numcomp_att, edu_att, cols = 2)
 
@@ -198,25 +239,46 @@ tribble(
 # these are the variables that retain employees as it progresses!
 
 job_att <- ggplot(employee_data, aes(x = Attrition, y = JobSatisfaction)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(y = "Job Satisfaction"
+  )
 
 age_att <- ggplot(employee_data, aes(x = Attrition, y = Age)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(y = "Age"
+  )
 
 worky_att <- ggplot(employee_data, aes(x = Attrition, y = TotalWorkingYears)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(y = "Total Working Yrs"
+  )
 
 yearscurr_att <- ggplot(employee_data, aes(x = Attrition, y = YearsInCurrentRole)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(y = "Yrs in Curr Role"
+  )
 
 yearscomp_att <- ggplot(employee_data, aes(x = Attrition, y = YearsAtCompany)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(y = "Yrs at Company"
+  )
 
 yearsmgr_att <- ggplot(employee_data, aes(x = Attrition, y = YearsWithCurrManager)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(y = "Yrs w/ Curr Manager"
+  )
 
 env_att <- ggplot(employee_data, aes(x = Attrition, y = EnvironmentSatisfaction)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(y = "Env Satisfaction"
+  )
 
 
 multiplot(job_att, age_att, worky_att, yearscurr_att, yearscomp_att, yearsmgr_att, env_att, cols = 3)
@@ -272,26 +334,26 @@ unique(employee_data$EducationField) # Life Sciences, Other, Medical, Marketing,
 unique(employee_data$JobRole) # Sales Exec, Research Scientist, Lab tech, manufacturing director, HC rep, Manager, Sales rep, research director, HR
 unique(employee_data$MaritalStatus) # Single, Married, Divorced
 
-businesstravel_plot <- ggplot(employee_data, aes(x = BusinessTravel, fill = Attrition)) +
+ggplot(employee_data, aes(x = BusinessTravel, fill = Attrition)) +
   geom_bar(position = "fill")
 # Those who travel more frequently have a higher attrition rate. So the more you travel, the more likely you are to leave your job within this data set.
 
-department_plot <- ggplot(employee_data, aes(x = Department, fill = Attrition)) +
+ggplot(employee_data, aes(x = Department, fill = Attrition)) +
   geom_bar(position = "fill")
 # Those who work in sales and hr have a higher attrition rate vs those in the research and development department.
 
-educationfield_plot <- ggplot(employee_data, aes(x = EducationField, fill = Attrition)) +
+ggplot(employee_data, aes(x = EducationField, fill = Attrition)) +
   geom_bar(position = "fill")
 # those with degrees or an educational background of HR, Marketing, and tech have higher attrition rate.
 # those with degrees or an educational background of life sciences, medical, and other have similar and lower attrition rates.
 
-jobrole_plot <- ggplot(employee_data, aes(x = JobRole, fill = Attrition)) +
+ggplot(employee_data, aes(x = JobRole, fill = Attrition)) +
   geom_bar(position = "fill")
 # Sales reps have the highest attrition rate of all job roles in this data set, it is then those who work in HR and as a lab tech.
 # Sales executives and research scientists have lower attrition than the above but still have high attrition rates.
 # manufacturing directors, managers, hc reps, and research directors all have low attrition rates.
 
-maritalstatus_plot <- ggplot(employee_data, aes(x = MaritalStatus, fill = Attrition)) +
+ggplot(employee_data, aes(x = MaritalStatus, fill = Attrition)) +
   geom_bar(position = "fill")
 # Those that are single have the highest attrition rates, those that are married and divorced have lower attrition rates.
 
@@ -352,6 +414,11 @@ ggplot(facet_data, aes(x = TotalWorkingYears, y = YearsSinceLastPromotion)) +
 # some possible explanations can include feeling under appreciated for their tenure and effort, overlooking educational impact, and etc.
 # Those with doctorates, showed an attrition even after promotions, could be due to suddenly finding a better opportunity 
 
+
+#=============================================================================================================================================================================================================================
+# MIGHT NOT USE!
+#=============================================================================================================================================================================================================================
+
 ggplot(facet_data, aes(x = TotalWorkingYears, y = Age)) +
   geom_point() +
   geom_smooth(se = FALSE) +
@@ -369,4 +436,9 @@ ggplot(facet_data, aes(x = TotalWorkingYears, y = Age)) +
   geom_smooth(se = FALSE) +
   facet_grid(Attrition ~ OverTime)
 # the last 3 facet grids do not add much value to the EDA ***MIGHT NOT INCLUDE!!!!**
+
+
+#=============================================================================================================================================================================================================================
+# RESOURCES AND SUPPORTING DETAILS:
+#=============================================================================================================================================================================================================================
 
