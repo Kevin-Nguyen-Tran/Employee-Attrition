@@ -346,6 +346,245 @@ As shown in the table above, the p-value is smallest for Years In Current Role, 
 * All were statistically significant, however, if we were to focus on a few variables and how we can retain employees: 
   * we need to ensure that we acquire tenured professionals, both in total work experience and experience in their role, as well as maintain a good employee to manager relationship.
 
+## Logistic Linear Regression Model 
+
+Within this section, we will build a binomial generalized linear model to predict the likelihood of attrition depending on all variables explored within the data analysis thus far.
+
+When analyzing the results of the model, the variables with significant p-values (less than 5%) and large effect sizes will be categorized as good predictors of attrition.
+
+Below is our Logistic Linear Regression Model and the summary of each variable in relation to eachother and how it corresponds to attrition:
+
+```{r}
+predicted <- glm(attrition ~ ., family = "binomial", data = corr_data)
+summary(predicted)
+```
+
+Based on the summary: Age, Distance from Home, Environment satisfaction, job satisfaction, overtime, total working years, work life balance, years in current role, years since last promotion and years with current manager are all good predictors.
+
+Top 3 Predictors
+
+* Overtime had the smallest p-value as well as the largest effect size
+* Environment satisfaction had a small p-value and the second largest effect size
+* Job Satisfaction had a slightly larger p-value and the third largest effect size
+  
+It is interesting to see that Numbers of Companies Worked and Years Since Last Promotion is statistically significant and are good predictors of attrition when it showed no average difference (noted by the t.test and heat map) in earlier sections.
+It is also surprising to see that years at company is also not statistically significant and a good predictor of attrition despite the t.test and heat map stating there was a significant difference.
+
+* Keep in mind, these good/bad predictors are determined by their relationship to one another in regards to attrition
+  * They are not individually analyzed in relation to attrition as the earlier sections do
+  * The real world would operate more closely to the results of the generalized linear model as people will generally consider multiple variables together prior to leaving a job versus just one.
+  
+# Categorical Variable Analysis
+In this section, we will evaluate the correlation between the categorical variables within our data set in relation to attrition. Within this data set we have 5:
+
+* Business Travel
+* Department
+* Education Field
+* Job Role
+* Marital Status
+
+We want to explore if someone who travels rarely will have a different likelihood of attrition vs someone who travels frequently and so on.
+
+To do this I have created a bar chart for each categorical variable and visualized the proportion of attrition for each.
+
+As shown below each categorical variable has a set of different levels:
+```{r}
+unique(employee_data$BusinessTravel) #Travel Rarely, Travel Freq, Non-Travel
+unique(employee_data$Department) # Sales, Research & Development, HR
+unique(employee_data$EducationField) # Life Sciences, Other, Medical, Marketing, Tech degree, HR
+unique(employee_data$JobRole) # Sales Exec, Research Scientist, Lab tech, manufacturing director, HC rep, Manager, Sales rep, research director, HR
+unique(employee_data$MaritalStatus) # Single, Married, Divorced
+```
+
+Below are the bar charts:
+```{r}
+ggplot(employee_data, aes(x = BusinessTravel, fill = Attrition)) +
+  geom_bar(position = "fill")
+```
+
+* Those who travel more frequently have a higher attrition rate. So the more frequently you travel, the higher the likelihood you are to leave your job within this data set.
+
+```{r}
+ggplot(employee_data, aes(x = Department, fill = Attrition)) +
+  geom_bar(position = "fill")
+```
+
+* Within this analysis, those who work in sales and HR have a higher attrition rate vs those in the research and development department.
+
+```{r}
+ggplot(employee_data, aes(x = EducationField, fill = Attrition)) +
+  geom_bar(position = "fill")
+```
+* Those with degrees or an educational background of HR, Marketing, and tech have higher attrition rate than those with degrees or an educational background of life sciences and medical.
+
+```{r}
+ggplot(employee_data, aes(x = JobRole, fill = Attrition)) +
+  geom_bar(position = "fill")
+```
+
+* Sales representatives have the highest attrition rate of all job roles in this data set, then those who work in HR and as a lab technician
+
+* Sales executives and research scientists have lower attrition than the above but still have high attrition rates.
+
+* Manufacturing directors, managers, healthcare representatives, and research directors all have low attrition rates.
+
+```{r}
+ggplot(employee_data, aes(x = MaritalStatus, fill = Attrition)) +
+  geom_bar(position = "fill")
+```
+
+* Those that are single have the highest attrition rates, those that are married and divorced have lower attrition rates.
+
+**Keep in mind that this outcome is not a representation of this particular data set population but not the general population. In order to make a statistical inference, we would need a larger data set.**
+
+## Predictors of Interest - Numeric vs Categorical
+
+Within this section of the analysis, I wanted to dive deeper into the good predictors and analyze their relationship to one another. We will facet wrap multiple variables together and analyze the relationship shown:
+
+```{r}
+facet_data <- employee_data %>%
+  mutate(education = mapvalues(employee_data$Education,
+            from = c(1, 2, 3, 4, 5),
+            to = c("Below College", "College", "Bachelor", "Master", "Doctor")),
+          jobsatisfaction = mapvalues(employee_data$JobSatisfaction,
+                                      from = c(1, 2, 3, 4),
+                                      to = c("Low", "Medium", "High", "Very High")),
+         environmentsatisfaction = mapvalues(employee_data$EnvironmentSatisfaction,
+                                             from = c(1, 2, 3, 4),
+                                             to = c("Low", "Medium", "High", "Very High")),
+         worklifebalance = mapvalues(employee_data$WorkLifeBalance,
+                                             from = c(1, 2, 3, 4),
+                                             to = c("Low", "Medium", "High", "Very High"))
+         )
+
+facet_data$jobsatisfaction_f <- factor(facet_data$jobsatisfaction, levels = c("Low", "Medium", "High", "Very High"))
+facet_data$education_f <- factor(facet_data$education, levels = c("Below College", "College", "Bachelor", "Master", "Doctor"))
+facet_data$environmentsatisfaction_f <- factor(facet_data$environmentsatisfaction, levels = c("Low", "Medium", "High", "Very High"))
+facet_data$worklifebalance_f <- factor(facet_data$worklifebalance, levels = c("Low", "Medium", "High", "Very High"))
+```
+
+```{r}
+ggplot(facet_data, aes(x = YearsInCurrentRole, y = YearsWithCurrManager)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_grid(Attrition ~ jobsatisfaction_f) 
+```
+
+As seen in the above graph, years in current role and years with current manager has a positive linear relationship in relation to attrition and job satisfaction
+
+Let's look at each section separately by attrition: 
+* Those without attrition: low job satisfaction shows a positive and then negative correlation in years with current role and current manager.
+  * This could imply internal management change.
+* Medium, High, and Very High job satisfaction shows a consistent positive relationship, with no noticeable decline
+
+* Those with attrition: Low, medium and high job satisfaction showed two declines in the relationship between years in current role and years with current manager.
+  * The dips occur at different lengths of time, people with low satisfaction tend to have a decline sooner than those with medium and high job satisfaction.
+  * As expected, those with very high job satisfaction but still left their job showed a positive correlation through out. This could imply that individuals might have suddenly left for a better opportunity towards the end of their tenure which explains no dips throughout their time with the current manager/current role.
+
+```{r}
+ggplot(facet_data, aes(x = TotalWorkingYears, y = YearsSinceLastPromotion)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_grid(Attrition ~ education_f) 
+```
+
+As seen in the above graph, total working years and years since last promotion, there are varying relationships in relation to attrition and education
+
+Let's look at each section separately by attrition: 
+
+* Those without attrition: over the total years of work there is an increase in years since last promotion for those with education levels of below college and a Bachelor's.
+* We see that there is a dip in years since last promotion over total working years within education levels of college and master's. This means that these individuals had a promotion within their career.
+  * It is surprising to see that college students will receive a promotion within their jobs at a sooner rate than those with Bachelor's. However, this can be explained by the type of work.
+  * College students tend to have different types of positions (food service, sales associate, and etc) vs Bachelors (entry level corporate roles and etc) which might lead to quicker/easier promotions. Individuals with Bachelor Degrees have more competition for promotions and tend to require 1.5+ years of tenure with the company.
+
+* Those with attrition: individuals with below college and college education (less than Bachelor's) showed attrition after promotions (as noted by the dip). This can be explained by the type of jobs obtained with that particular education level. Such as call center representatives, sales, receptionists, admin support, and etc.
+  * That regardless of a promotion, these positions are expected to have higher turnover.
+* As expected, those with a Bachelor's and Master's Degree who were not promoted for a long time over the total tenure have left their jobs.
+  * Some possible explanations can include feeling under appreciated for their tenure and effort, overlooking educational impact, and etc.
+* Those with doctorates, showed attrition even after promotions, could be due to suddenly finding a better opportunity 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
