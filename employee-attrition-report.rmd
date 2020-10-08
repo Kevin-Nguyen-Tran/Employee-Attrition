@@ -120,20 +120,22 @@ ggcorrplot(cor(corr_data), hc.order = TRUE, lab = TRUE, lab_size = 2) +
 * Based on this correlation plot, we are more interested in how attrition fares with the other employee factors
 * We can separate by positive correlation, neutral correlation. and negative correlation
   * Positive correlation: overtime and distance from home
-  * Neutral correlation (+- less than .05): hourly rate, distance from home, percent salary hike, gender, years since last promotion, work life balance.
-  * Negative correlation: job satisfaction, age, total working years, years in current role, years at company, years with current manager, and environment sat
+  * Neutral correlation (+- less than .05): hourly rate, distance from home, percent salary hike, gender, years since last promotion, and work life balance.
+  * Negative correlation: job satisfaction, age, total working years, years in current role, years at company, years with current manager, and environment satisfaction
 
 * This will be our overhead analysis and we will now dive a bit deeper into each group and see if it matches our linear regression model (which we will formulate later in our analysis).
 
 ## Positive Correlation to Attrition
-In this section, we will evaluate the positive correlation within our data set in relation to attrition. According to our heat map, we have two:
+In this section, we will evaluate the positive correlation within our data set in relation to attrition. According to our heat map, we have **2**:
+
 * OverTime
+
 * Distance from Home
 
-This indicates, that as overtime increases and work distance from home increases, so does the likelihood of attrition as shown below:
+**This indicates that as overtime increases and work distance from home increases, so does the likelihood of attrition as shown below:**
 
 ```{r}
-ggplot(employee_data, aes(x = OverTime, fill = Attrition)) +
+ot_bar <- ggplot(employee_data, aes(x = OverTime, fill = Attrition)) +
   geom_bar(position = "fill") +
   theme_dark() +
   labs(x = "Over Time", 
@@ -144,8 +146,8 @@ ggplot(employee_data, aes(x = OverTime, fill = Attrition)) +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5))
 
-ggplot(employee_data, aes(x = Attrition, y = DistanceFromHome)) +
-  geom_boxplot() +
+dist_box <- ggplot(employee_data, aes(x = Attrition, y = DistanceFromHome)) +
+  geom_boxplot(fill = wes_palette("Moonrise3", n = 2)) +
   theme_dark() +
   labs(x = "Attrition", 
        y = "Distance from Home",
@@ -154,12 +156,15 @@ ggplot(employee_data, aes(x = Attrition, y = DistanceFromHome)) +
        caption = "Source: IBM HR Analytics") +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5))
+
+multiplot(ot_bar, dist_box, cols = 2)
+
 ```
 
 This bar chart tells us, that there is more attrition in those that decide to work overtime vs those that do not. Also, this box plot tells us, that there is more attrition in those that have to commute greater distances than those that do not.
 
 * Within this data set, attrition will occur when an individual will have to commute 10.63+ miles to work.
-  * Commute tolerance will vary depending on job type, geographic location, and etc.
+  * Keep in mind commute tolerance will vary depending on job type, geographic location, and etc.
 
 Although both plots show a positive correlation to attrition, is it statistically significant?
 ```{r}
@@ -169,13 +174,14 @@ t.test(corr_data$DistanceFromHome ~ corr_data$attrition, mu = 0, alt = "two.side
 
 ```
 
-Null Hypothesis: states that there is no significant difference between the attrition of those who work and do not work overtime.
-Null Hypothesis: states that there is no significant difference between the attrition of those who work closer to home and who works further from home.
+Null Hypothesis 1: states that there is no significant difference between the attrition of those who work and do not work overtime.
 
-Due to our p-value being less than 5% and the confidence interval does not include zero, we can reject both of the null hypotheses above with 95% confidence and assume that there is a statistically significant difference in attrition.
+Null Hypothesis 2: states that there is no significant difference between the attrition of those who work closer to home and those who work further from home.
+
+Due to our p-value being less than 5% and the confidence interval does not include zero, we can reject both of the null hypotheses above with 95% confidence and state that there is a statistically significant difference in attrition for each respective variable.
 
 ## Neutral Correlation to Attrition
-In this section, we will evaluate the neutral correlation within our data set in relation to attrition. According to our heat map, we have 7 (+- .05):
+In this section, we will evaluate the neutral correlation within our data set in relation to attrition. According to our heat map, we have **7** (+- .05):
 
 * Hourly Rate
 * Percent Salary Hike
@@ -184,7 +190,7 @@ In this section, we will evaluate the neutral correlation within our data set in
 * Education
 * Gender
 
-This indicates, that as each variable increases there will be no change in the likelihood of attrition as shown below:
+**This indicates, that as each variable increases there will be no change in the likelihood of attrition as shown below:**
 ```{r}
 hr_att <- ggplot(employee_data, aes(x = Attrition, y = HourlyRate)) +
   geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
@@ -216,12 +222,18 @@ edu_att <- ggplot(employee_data, aes(x = Attrition, y = Education)) +
   labs(y = "Education"
   )
 
-multiplot(hr_att, perc_att, years_att, numcomp_att, edu_att, cols = 2)
+gender_bar<- ggplot(employee_data, aes(x = Gender, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  theme_dark()
 
-ggplot(employee_data, aes(x = Gender, fill = Attrition)) +
-  geom_bar(position = "fill")
+multiplot(hr_att, perc_att, years_att, numcomp_att, edu_att, gender_bar, cols = 2)
+```
 
-# As we can see, the average of each variable are similar regardless of attrition status.
+As we can see, the averages of each variable are similar regardless of attrition status. Let's confirm this by running t.tests for each variable in relation to attrition.
+
+Because these are neutral correlation variables, we hypothesize, that each p-value will be >5% which claims insignificance.
+
+```{r}
 hourrate_t <- t.test(corr_data$HourlyRate ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 percsalhike_t <- t.test(corr_data$PercentSalaryHike ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 yrslastpromo_t <- t.test(corr_data$YearsSinceLastPromotion ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
@@ -240,12 +252,12 @@ tribble(
 )
 ```
 
-Hourly rate, percent salary hike, years since last promotion, Number of Companies Worked, education and gender all show no significant difference in those who did and did not leave their job. Which aligns with the pearson's correlation test.
+Hourly rate, percent salary hike, years since last promotion, number of Companies worked, education and gender all show no significant difference in those who did and did not leave their job. Which aligns with the Pearson's correlation test and hypothesis!
 
-* Therefore, within this data set, we can assume that the variables above do not affect attrition and will not be a good predictor when formulating a linear regression model (which will be in later sections).
+* Therefore, within this data set, we can assume that the variables above do not affect attrition and will not be a good predictor when formulating a linear regression model (which will be formulated in later sections).
 
 ## Negative Correlation to Attrition
-In this section, we will evaluate the negative correlation within our data set in relation to attrition. According to our heat map, we have 8:
+In this section, we will evaluate the negative correlation within our data set in relation to attrition. According to our heat map, we have **8**:
 
 * Job Satisfaction
 * Age
@@ -257,7 +269,7 @@ In this section, we will evaluate the negative correlation within our data set i
 * Environment Satisfaction
 
 
-This indicates, that as each variable increases there will be less likelihood of attrition as shown below:
+**This indicates, that as each variable increases there will be less likelihood of attrition as shown below:**
 ```{r}
 job_att <- ggplot(employee_data, aes(x = Attrition, y = JobSatisfaction)) +
   geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
@@ -337,22 +349,28 @@ tribble(
 
 
 * All t.tests above show a significant difference between the average of each variable in respect to attrition. 
+  
   * Therefore we can say with 95% confidence that each variable has a significantly negative correlation with attrition.
 
-* To retain employees, they are more satisfied with their job, have had more tenure and working experience at the company. Who have also stayed under their current manager and is satisfied with their environment.
-  *If we were to choose areas of focus, we would look at the p-values and see which one had the smallest and make those areas of focus, since the probability of retention would be greater!
+* To retain employees, they are more satisfied with their job, have had more tenure and working experience at the company. 
+
+* They have also stayed under their current manager and is satisfied with their environment.
+
+  * If we were to choose areas to improve retention, we would look at the p-values and see which one had the smallest and make those areas of focus, since the probability of retention would be greater!
 
 As shown in the table above, the p-value is smallest for Years In Current Role, Total Working Years, and years with current Manager.
+
 * All were statistically significant, however, if we were to focus on a few variables and how we can retain employees: 
-  * we need to ensure that we acquire tenured professionals, both in total work experience and experience in their role, as well as maintain a good employee to manager relationship.
+  
+  * We need to ensure that we acquire tenured professionals, both in total work experience and experience in their role, as well as maintain a good employee to manager relationship.
 
 ## Logistic Linear Regression Model 
 
-Within this section, we will build a binomial generalized linear model to predict the likelihood of attrition depending on all variables explored within the data analysis thus far.
+As promised in earlier sections, we will build a binomial generalized linear model to predict the likelihood of attrition depending on all variables explored within the data analysis thus far.
 
 When analyzing the results of the model, the variables with significant p-values (less than 5%) and large effect sizes will be categorized as good predictors of attrition.
 
-Below is our Logistic Linear Regression Model and the summary of each variable in relation to eachother and how it corresponds to attrition:
+Below is our Logistic Linear Regression Model and the summary of each variable in relation to each other and how it corresponds to the probability of attrition:
 
 ```{r}
 predicted <- glm(attrition ~ ., family = "binomial", data = corr_data)
@@ -368,14 +386,15 @@ Top 3 Predictors
 * Job Satisfaction had a slightly larger p-value and the third largest effect size
   
 It is interesting to see that Numbers of Companies Worked and Years Since Last Promotion is statistically significant and are good predictors of attrition when it showed no average difference (noted by the t.test and heat map) in earlier sections.
+
 It is also surprising to see that years at company is also not statistically significant and a good predictor of attrition despite the t.test and heat map stating there was a significant difference.
 
 * Keep in mind, these good/bad predictors are determined by their relationship to one another in regards to attrition
-  * They are not individually analyzed in relation to attrition as the earlier sections do
+  * They are not individually analyzed in relation to attrition as the earlier sections did
   * The real world would operate more closely to the results of the generalized linear model as people will generally consider multiple variables together prior to leaving a job versus just one.
   
 # Categorical Variable Analysis
-In this section, we will evaluate the correlation between the categorical variables within our data set in relation to attrition. Within this data set we have 5:
+In this section, we will evaluate the correlation between the categorical variables within our data set in relation to attrition. Within this data set we have **5**:
 
 * Business Travel
 * Department
@@ -387,8 +406,8 @@ We want to explore if someone who travels rarely will have a different likelihoo
 
 To do this I have created a bar chart for each categorical variable and visualized the proportion of attrition for each.
 
-As shown below each categorical variable has a set of different levels:
-```{r}
+**As shown below each categorical variable has a set of different levels:**
+```{r, include = FALSE}
 unique(employee_data$BusinessTravel) #Travel Rarely, Travel Freq, Non-Travel
 unique(employee_data$Department) # Sales, Research & Development, HR
 unique(employee_data$EducationField) # Life Sciences, Other, Medical, Marketing, Tech degree, HR
@@ -396,33 +415,52 @@ unique(employee_data$JobRole) # Sales Exec, Research Scientist, Lab tech, manufa
 unique(employee_data$MaritalStatus) # Single, Married, Divorced
 ```
 
-Below are the bar charts:
+* Business Travel: Travel Rarely, Travel Freq, Non-Travel
+
+* Department: Sales, Research & Development, HR
+
+* Education Field: Life Sciences, Other, Medical, Marketing, Tech degree, HR
+
+* Job Role: Sales Exec, Research Scientist, Lab tech, manufacturing director, HC rep, Manager, Sales rep, research director, and HR
+
+* Marital Status: Single, Married, and Divorced
+
+**Below are the bar charts for each categorical variable in relation to attrition:**
 ```{r}
 ggplot(employee_data, aes(x = BusinessTravel, fill = Attrition)) +
-  geom_bar(position = "fill")
+  geom_bar(position = "fill") +
+  theme_dark() +
+  coord_flip()
 ```
 
 * Those who travel more frequently have a higher attrition rate. So the more frequently you travel, the higher the likelihood you are to leave your job within this data set.
 
 ```{r}
 ggplot(employee_data, aes(x = Department, fill = Attrition)) +
-  geom_bar(position = "fill")
+  geom_bar(position = "fill") +
+  theme_dark() +
+  coord_flip()
 ```
 
 * Within this analysis, those who work in sales and HR have a higher attrition rate vs those in the research and development department.
 
 ```{r}
 ggplot(employee_data, aes(x = EducationField, fill = Attrition)) +
-  geom_bar(position = "fill")
+  geom_bar(position = "fill") +
+  theme_dark() +
+  coord_flip()
 ```
+
 * Those with degrees or an educational background of HR, Marketing, and tech have higher attrition rate than those with degrees or an educational background of life sciences and medical.
 
 ```{r}
 ggplot(employee_data, aes(x = JobRole, fill = Attrition)) +
-  geom_bar(position = "fill")
+  geom_bar(position = "fill") +
+  theme_dark() +
+  coord_flip()
 ```
 
-* Sales representatives have the highest attrition rate of all job roles in this data set, then those who work in HR and as a lab technician
+* Sales representatives have the highest attrition rate of all job roles in this data set, next are those who work in HR and as a lab technician
 
 * Sales executives and research scientists have lower attrition than the above but still have high attrition rates.
 
@@ -430,12 +468,14 @@ ggplot(employee_data, aes(x = JobRole, fill = Attrition)) +
 
 ```{r}
 ggplot(employee_data, aes(x = MaritalStatus, fill = Attrition)) +
-  geom_bar(position = "fill")
+  geom_bar(position = "fill") +
+  theme_dark() +
+  coord_flip()
 ```
 
 * Those that are single have the highest attrition rates, those that are married and divorced have lower attrition rates.
 
-**Keep in mind that this outcome is not a representation of this particular data set population but not the general population. In order to make a statistical inference, we would need a larger data set.**
+**Keep in mind that these outcomes are a representation of this particular data set population but not the general population. In order to make a statistical inference on the general population, we would need a larger data set.**
 
 ## Predictors of Interest - Numeric vs Categorical
 
@@ -473,12 +513,17 @@ ggplot(facet_data, aes(x = YearsInCurrentRole, y = YearsWithCurrManager)) +
 As seen in the above graph, years in current role and years with current manager has a positive linear relationship in relation to attrition and job satisfaction
 
 Let's look at each section separately by attrition: 
-* Those without attrition: low job satisfaction shows a positive and then negative correlation in years with current role and current manager.
+
+* **Those without attrition**: low job satisfaction shows a positive and then negative correlation in years with current role and current manager.
+
   * This could imply internal management change.
+
 * Medium, High, and Very High job satisfaction shows a consistent positive relationship, with no noticeable decline
 
-* Those with attrition: Low, medium and high job satisfaction showed two declines in the relationship between years in current role and years with current manager.
+* **Those with attrition**: Low, medium and high job satisfaction showed two declines in the relationship between years in current role and years with current manager.
+ 
   * The dips occur at different lengths of time, people with low satisfaction tend to have a decline sooner than those with medium and high job satisfaction.
+ 
   * As expected, those with very high job satisfaction but still left their job showed a positive correlation through out. This could imply that individuals might have suddenly left for a better opportunity towards the end of their tenure which explains no dips throughout their time with the current manager/current role.
 
 ```{r}
@@ -492,15 +537,22 @@ As seen in the above graph, total working years and years since last promotion, 
 
 Let's look at each section separately by attrition: 
 
-* Those without attrition: over the total years of work there is an increase in years since last promotion for those with education levels of below college and a Bachelor's.
+* **Those without attrition**: over the total years of work there is an increase in years since last promotion for those with education levels of below college and a Bachelor's.
+
 * We see that there is a dip in years since last promotion over total working years within education levels of college and master's. This means that these individuals had a promotion within their career.
+ 
   * It is surprising to see that college students will receive a promotion within their jobs at a sooner rate than those with Bachelor's. However, this can be explained by the type of work.
+  
   * College students tend to have different types of positions (food service, sales associate, and etc) vs Bachelors (entry level corporate roles and etc) which might lead to quicker/easier promotions. Individuals with Bachelor Degrees have more competition for promotions and tend to require 1.5+ years of tenure with the company.
 
-* Those with attrition: individuals with below college and college education (less than Bachelor's) showed attrition after promotions (as noted by the dip). This can be explained by the type of jobs obtained with that particular education level. Such as call center representatives, sales, receptionists, admin support, and etc.
+* **Those with attrition**: individuals with below college and college education (less than Bachelor's) showed attrition after promotions (as noted by the dip). This can be explained by the type of jobs obtained with that particular education level. Such as call center representatives, sales, receptionists, admin support, and etc.
+ 
   * That regardless of a promotion, these positions are expected to have higher turnover.
+
 * As expected, those with a Bachelor's and Master's Degree who were not promoted for a long time over the total tenure have left their jobs.
+  
   * Some possible explanations can include feeling under appreciated for their tenure and effort, overlooking educational impact, and etc.
+
 * Those with doctorates, showed attrition even after promotions, could be due to suddenly finding a better opportunity 
 
 
