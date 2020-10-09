@@ -543,9 +543,9 @@ Let's look at each section separately by attrition:
  
   * It is surprising to see that college students will receive a promotion within their jobs at a sooner rate than those with Bachelor's. However, this can be explained by the type of work.
   
-  * College students tend to have different types of positions (food service, sales associate, and etc) vs Bachelors (entry level corporate roles and etc) which might lead to quicker/easier promotions. Individuals with Bachelor Degrees have more competition for promotions and tend to require 1.5+ years of tenure with the company.
+  * College students (less than a Bachelor's degree) tend to have different types of part-time/full-time positions (food service, sales associate, and etc) vs Bachelors (entry level corporate roles and etc) which might lead to earlier promotions. Individuals with Bachelor Degrees that have entry level positions normally require a certain amount of tenure/experience with the company prior to promotions.
 
-* **Those with attrition**: individuals with below college and college education (less than Bachelor's) showed attrition after promotions (as noted by the dip). This can be explained by the type of jobs obtained with that particular education level. Such as call center representatives, sales, receptionists, admin support, and etc.
+* **Those with attrition**: individuals with below college and college education (less than Bachelor's) showed attrition after promotions (as noted by the dip). This can be explained by the type of jobs obtained with that particular education level. 
  
   * That regardless of a promotion, these positions are expected to have higher turnover.
 
@@ -553,7 +553,7 @@ Let's look at each section separately by attrition:
   
   * Some possible explanations can include feeling under appreciated for their tenure and effort, overlooking educational impact, and etc.
 
-* Those with doctorates, showed attrition even after promotions, could be due to suddenly finding a better opportunity 
+* Those with doctorates, showed attrition even after promotions, this could be due to suddenly finding a better opportunity with their tenure at the company.
 
 
 
