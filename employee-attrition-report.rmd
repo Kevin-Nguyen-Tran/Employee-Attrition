@@ -92,10 +92,11 @@ employee_data %>%
   summarise(n = n())
 ```
 
-Within the data set, 1233 have stayed with their employer and 237 have left their job.
-This data set shows that roughly 20% of employees have left their employer. We will analyze attrition and its relationship to multiple variables to see their correlation and possible focus points of improvement.
+* Within the data set, there are 237 individuals who left their employer and 1233 individuals who are still currently with their employer.
+  * This data set shows that roughly 20% of employees have left their employer. 
 
-First we will run a Pearson's Correlation heat map and see which variables have a positive, neutral, or negative correlation and explore each group and produce possible explanations for these relationships.
+* We will analyze attrition and its relationship to multiple variables to see their correlation and possible focus points of improvement.
+  * To do this, we will run a Pearson's Correlation heat map and see which variables have a positive, neutral, or negative correlation and explore each group and produce possible explanations for these relationships.
 
 ## Pearson's Correlation - Heat Map
 
@@ -166,7 +167,8 @@ This bar chart tells us, that there is more attrition in those that decide to wo
 * Within this data set, attrition will occur when an individual will have to commute 10.63+ miles to work.
   * Keep in mind commute tolerance will vary depending on job type, geographic location, and etc.
 
-Although both plots show a positive correlation to attrition, is it statistically significant?
+**Although both plots show a positive correlation to attrition, is it statistically significant?**
+
 ```{r}
 t.test(corr_data$overtime ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
@@ -174,9 +176,9 @@ t.test(corr_data$DistanceFromHome ~ corr_data$attrition, mu = 0, alt = "two.side
 
 ```
 
-Null Hypothesis 1: states that there is no significant difference between the attrition of those who work and do not work overtime.
+*Null Hypothesis 1: states that there is no significant difference between the attrition of those who work and do not work overtime.*
 
-Null Hypothesis 2: states that there is no significant difference between the attrition of those who work closer to home and those who work further from home.
+*Null Hypothesis 2: states that there is no significant difference between the attrition of those who work closer to home and those who work further from home.*
 
 Due to our p-value being less than 5% and the confidence interval does not include zero, we can reject both of the null hypotheses above with 95% confidence and state that there is a statistically significant difference in attrition for each respective variable.
 
@@ -229,9 +231,9 @@ gender_bar<- ggplot(employee_data, aes(x = Gender, fill = Attrition)) +
 multiplot(hr_att, perc_att, years_att, numcomp_att, edu_att, gender_bar, cols = 2)
 ```
 
-As we can see, the averages of each variable are similar regardless of attrition status. Let's confirm this by running t.tests for each variable in relation to attrition.
+* As we can see, the averages of each variable are similar regardless of attrition status. Let's confirm this by running t.tests for each variable in relation to attrition.
 
-Because these are neutral correlation variables, we hypothesize, that each p-value will be >5% which claims insignificance.
+* Because these are neutral correlation variables, we hypothesize, that each p-value will be > 5% which claims insignificance.
 
 ```{r}
 hourrate_t <- t.test(corr_data$HourlyRate ~ corr_data$attrition, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
@@ -252,7 +254,7 @@ tribble(
 )
 ```
 
-Hourly rate, percent salary hike, years since last promotion, number of Companies worked, education and gender all show no significant difference in those who did and did not leave their job. Which aligns with the Pearson's correlation test and hypothesis!
+Hourly rate, percent salary hike, years since last promotion, number of companies worked, education and gender all show no significant difference in those who did and did not leave their job. Which aligns with the Pearson's correlation test and hypothesis!
 
 * Therefore, within this data set, we can assume that the variables above do not affect attrition and will not be a good predictor when formulating a linear regression model (which will be formulated in later sections).
 
@@ -370,7 +372,7 @@ As promised in earlier sections, we will build a binomial generalized linear mod
 
 When analyzing the results of the model, the variables with significant p-values (less than 5%) and large effect sizes will be categorized as good predictors of attrition.
 
-Below is our Logistic Linear Regression Model and the summary of each variable in relation to each other and how it corresponds to the probability of attrition:
+**Below is our Logistic Linear Regression Model and the summary of each variable in relation to each other and how it corresponds to the probability of attrition:**
 
 ```{r}
 predicted <- glm(attrition ~ ., family = "binomial", data = corr_data)
@@ -379,7 +381,7 @@ summary(predicted)
 
 Based on the summary: Age, Distance from Home, Environment satisfaction, job satisfaction, overtime, total working years, work life balance, years in current role, years since last promotion and years with current manager are all good predictors.
 
-Top 3 Predictors
+**Top 3 Predictors**
 
 * Overtime had the smallest p-value as well as the largest effect size
 * Environment satisfaction had a small p-value and the second largest effect size
@@ -479,7 +481,9 @@ ggplot(employee_data, aes(x = MaritalStatus, fill = Attrition)) +
 
 ## Predictors of Interest - Numeric vs Categorical
 
-Within this section of the analysis, I wanted to dive deeper into the good predictors and analyze their relationship to one another. We will facet wrap multiple variables together and analyze the relationship shown:
+Within this section of the analysis, I wanted to dive deeper into the good predictors and analyze their relationship to one another. 
+
+**We will facet wrap multiple variables together and analyze the relationship shown:**
 
 ```{r}
 facet_data <- employee_data %>%
@@ -526,7 +530,7 @@ Let's look at each section separately by attrition:
  
   * As expected, those with very high job satisfaction but still left their job showed a positive correlation through out. This could imply that individuals might have suddenly left for a better opportunity towards the end of their tenure which explains no dips throughout their time with the current manager/current role.
 
-```{r}
+```{r, warning = FALSE}
 ggplot(facet_data, aes(x = TotalWorkingYears, y = YearsSinceLastPromotion)) +
   geom_point() +
   geom_smooth(se = FALSE) +
